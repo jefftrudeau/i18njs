@@ -10,8 +10,8 @@ Copyright (C) Jeff Trudeau
 Supports one translation (.po) file per language, which should be placed in the po/ directory and
 appropriately named, e.g., 'po/en-US.po'.
 
-Include the i18n.js script from your page and use the String class' i18n() prototype method, for
-example:
+Download the repository and include the i18n.js script in your page, then use the String class'
+i18n() prototype method, for example:
 
 <script type="text/javascript" src="http://sub.domain.com/path/to/i18njs/i18n.js"></script>
 <script type="text/javascript">
