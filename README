@@ -7,20 +7,31 @@ Released under the GNU General Public License, version 2.
 Copyright (C) Jeff Trudeau
 
 ----------------
-Supports one translation (.po) file per language, which should be placed in the po/ directory and
-appropriately named, e.g., 'po/en-US.po'.
+Supports one translation (.po) file per language, which should be named according to its applicable
+browser locale, e.g., 'en-US.po'. If you want to split up your translations, just put the files in
+different directories.
 
-Download the repository and include the i18n.js script in your page, then use the String class'
-i18n() prototype method, for example:
+Include the i18n.js script in your page and call i18n.init('/path/to/po-files/') to load your
+translations. To translate a string, use the String class' i18n() instance method.
 
-<script type="text/javascript" src="http://sub.domain.com/path/to/i18njs/i18n.js"></script>
-<script type="text/javascript">
-//<![CDATA[
-  alert("I will translate this string while replacing '%s' and %d".i18n("this", 1));
-//]]>
-</script>
+Given the following .po file:
+
+  msgid "This is an example string to be translated, with some tokens, '%s' and %d."
+  msgstr "And here's the translated string, complete with '%s' and %s ;)"
+
+And the following script:
+
+  <script type="text/javascript" src="http://code.braeburntech.com/i18njs/i18n.min.js"></script>
+  <script type="text/javascript">
+    i18n.init('/po');
+    alert("This is an example string to be translated, with some tokens, '%s' and %d.".i18n('token1', 2));
+  </script>
+
+The result will be the following alert message:
+
+  And here's the translated string, complete with 'token1' and 2 ;)
 
 ----------------
 TODO:
 
-Currently does not support re-ordering of replacement tokens.
+Support re-ordering of replacement tokens.
