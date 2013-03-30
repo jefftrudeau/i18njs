@@ -9,10 +9,12 @@
  */
 var i18n = {
 
-  // translations
-  strings: {}
+  context: 'default'
 
-  // simple AJAX request used to load resources
+, debug: false
+
+, strings: {}
+
 , ajax: function (uri) {
     var a = [
           'XMLHttpRequest'
@@ -24,33 +26,41 @@ var i18n = {
     try {
       if (!o) return '';
       o.open('GET', uri, false);
-      //o.setRequestHeader('User-Agent', navigator.userAgent);
       o.send(null);
       return o.responseText;
     }
-    catch (e) {}
+    catch (e) { if (i18n.debug) console.log(e.message); }
   }
 
-  // setup library
-, init: function (uri) {
-    i18n.load_translations(uri);
+, init: function (uri, context, debug) {
+    if (context) i18n.context = context;
+    i18n.debug = debug;
+    i18n.load(uri);
   }
 
-  // load translations from a .po file matching user's locale
-, load_translations: function (uri) {
-    var key = ''
+, load: function (uri) {
+    var ctxt = 'default', id = '', id_plural = ''
       , dict = i18n.ajax(uri+'/'+i18n.locale()+'.po').split(/\n|\r|\r\n/);
     for (var i in dict) {
       if (!dict[i] || !dict[i].indexOf || dict[i].indexOf('#') == 0)
         continue;
-      if (dict[i].indexOf('msgid') == 0)
-        key = dict[i].replace(/msgid\s"(.*)"/, '$1');
+      if (dict[i] == '') {
+        ctxt = 'default'; id = ''; id_plural = '';
+      }
+      else if (dict[i].indexOf('msgctxt') == 0)
+        ctxt = dict[i].replace(/msgctxt\s"(.*)"/, '$1');
+      else if (dict[i].indexOf('msgid_plural') == 0)
+        id_plural = dict[i].replace(/msgid_plural\s"(.*)"/, '$1');
+      else if (dict[i].indexOf('msgid') == 0)
+        id = dict[i].replace(/msgid\s"(.*)"/, '$1');
+      else if (dict[i].indexOf('msgstr[1]') == 0)
+        i18n.set(ctxt, id_plural, dict[i].replace(/msgstr.*"(.*)"/, '$1'));
       else if (dict[i].indexOf('msgstr') == 0)
-        i18n.strings[key] = dict[i].replace(/msgstr\s"(.*)"/, '$1');
+        i18n.set(ctxt, id, dict[i].replace(/msgstr.*"(.*)"/, '$1'));
     }
+    if (i18n.debug) console.log(i18n.strings);
   }
 
-  // determine user's locale
 , locale: function () {
     if (navigator)
       for (var key in ['language', 'browserLanguage', 'systemLanguage', 'userLanguage'])
@@ -58,16 +68,21 @@ var i18n = {
     return 'en-US';
   }
 
-  // translate a string
+, set: function (ctxt, key, value) {
+    if (ctxt && typeof(i18n.strings[ctxt]) == 'undefined')
+      i18n.strings[ctxt] = {};
+    if (key && value)
+      i18n.strings[ctxt][key] = value;
+  }
+
 , translate: function (string, values) {
-    var result = i18n.strings[string] || string;
     try {
-      return result.replace(/{(\d+)}/g, function(match, index) {
+      return i18n.strings[i18n.context][string].replace(/{(\d+)}/g, function(match, index) {
         return typeof(values[index] != 'undefined') ? values[index] : match;
       });
     }
-    catch (e) {}
-    return result;
+    catch (e) { if (i18n.debug) console.log(e.message); }
+    return string;
   }
 
 };
